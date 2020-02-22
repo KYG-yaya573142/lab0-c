@@ -185,6 +185,9 @@ void q_sort(queue_t *q)
     if (!q->head->next)
         return;
     q->head = merge_sort(q->head);
+    while (q->tail->next) { /* update the tail pointer */
+        q->tail = q->tail->next;
+    }
 }
 
 /* merge sort algorithm */
