@@ -9,6 +9,9 @@
 static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2);
 static list_ele_t *merge_sort(list_ele_t *head);
 
+/*  conditional compilation for merge sort */
+#define RECURSIVE_MERGEx
+
 /*
  * Create empty queue.
  * Return NULL if could not allocate space.
@@ -206,6 +209,7 @@ static list_ele_t *merge_sort(list_ele_t *head)
     return merge(l1, l2);
 }
 
+#ifdef RECURSIVE_MERGE
 /* recursive merge */
 static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
 {
@@ -222,3 +226,42 @@ static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
         return l2;
     }
 }
+#else
+/* iterative merge */
+static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
+{
+    if (!l1)
+        return l2;
+    if (!l2)
+        return l1;
+
+    list_ele_t *head = NULL; /* pseudo head */
+    list_ele_t *tmp = NULL;
+    /* decide the first element and use it as pseudo head */
+    if (strcasecmp(l1->value, l2->value) < 0) {
+        head = l1;
+        l1 = l1->next;
+    } else {
+        head = l2;
+        l2 = l2->next;
+    }
+    /* merge remaining elements to pseudo head */
+    tmp = head;
+    while (l1 && l2) {
+        if (strcasecmp(l1->value, l2->value) < 0) {
+            tmp->next = l1;
+            l1 = l1->next;
+
+        } else {
+            tmp->next = l2;
+            l2 = l2->next;
+        }
+        tmp = tmp->next;
+    }
+    if (l1)
+        tmp->next = l1;
+    if (l2)
+        tmp->next = l2;
+    return head;
+}
+#endif
