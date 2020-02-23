@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "harness.h"
+#include "natsort/strnatcmp.h"
 #include "queue.h"
 
 /* private functions for sort */
@@ -221,7 +222,7 @@ static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
     if (!l2)
         return l1;
 
-    if (strcasecmp(l1->value, l2->value) < 0) {
+    if (strnatcmp(l1->value, l2->value) < 0) {
         l1->next = merge(l1->next, l2);
         return l1;
     } else {
@@ -241,7 +242,7 @@ static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
     list_ele_t *head = NULL; /* pseudo head */
     list_ele_t *tmp = NULL;
     /* decide the first element and use it as pseudo head */
-    if (strcasecmp(l1->value, l2->value) < 0) {
+    if (strnatcmp(l1->value, l2->value) < 0) {
         head = l1;
         l1 = l1->next;
     } else {
@@ -251,7 +252,7 @@ static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
     /* merge remaining elements to pseudo head */
     tmp = head;
     while (l1 && l2) {
-        if (strcasecmp(l1->value, l2->value) < 0) {
+        if (strnatcmp(l1->value, l2->value) < 0) {
             tmp->next = l1;
             l1 = l1->next;
 
