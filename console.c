@@ -565,7 +565,8 @@ int cmd_select(int nfds,
     char *cmdline;
     int infd;
     fd_set local_readset;
-    while (!block_flag && read_ready()) {
+    while (!block_flag &&
+           read_ready()) { /* excute the command in input buffer */
         cmdline = readline();
         interpret_cmd(cmdline);
         prompt_flag = true;
@@ -574,40 +575,47 @@ int cmd_select(int nfds,
     if (cmd_done())
         return 0;
 
-    if (!block_flag) {
-        /* Process any commands in input buffer */
+    /* need to read command from fd */
+    infd = buf_stack->fd;
+    if (infd != STDIN_FILENO) { /* use trace files */
+        /* prepare necessary data for select */
         if (!readfds)
             readfds = &local_readset;
-
-        /* Add input fd to readset for select */
-        infd = buf_stack->fd;
         FD_SET(infd, readfds);
-        if (infd == STDIN_FILENO && prompt_flag) {
-            printf("%s", prompt);
-            fflush(stdout);
-            prompt_flag = true;
-        }
-
         if (infd >= nfds)
             nfds = infd + 1;
-    }
-    if (nfds == 0)
-        return 0;
+        if (nfds == 0)
+            return 0;
 
-    int result = select(nfds, readfds, writefds, exceptfds, timeout);
-    if (result <= 0)
+        int result = select(nfds, readfds, writefds, exceptfds, timeout);
+        if (result <= 0)
+            return result;
+        if (readfds && FD_ISSET(infd, readfds)) {
+            /* Commandline input available */
+            FD_CLR(infd, readfds);
+            result--;
+            cmdline = readline();
+            if (cmdline)
+                interpret_cmd(cmdline);
+        }
         return result;
-
-    infd = buf_stack->fd;
-    if (readfds && FD_ISSET(infd, readfds)) {
-        /* Commandline input available */
-        FD_CLR(infd, readfds);
-        result--;
-        cmdline = readline();
+    } else { /* use linenoise (stdin) */
+        cmdline = linenoise(prompt);
+        int len = strlen(cmdline);
+        if (len >= (RIO_BUFSIZE - 2)) /* prevent overflow */
+            len = RIO_BUFSIZE - 2;
+        memcpy(linebuf, cmdline, len + 1); /* copy content to inter buffer */
+        /* the original string got from linenoise is ended with \0,
+         * change it to \n\0. */
+        linebuf[len] = '\n';
+        linebuf[len + 1] = '\0';
+        free(cmdline); /* free the memory allocated by linenoise */
+        if (len)
+            cmdline = linebuf;
         if (cmdline)
             interpret_cmd(cmdline);
     }
-    return result;
+    return 0;
 }
 
 bool finish_cmd()
