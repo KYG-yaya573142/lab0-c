@@ -12,6 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "dudect/fixture.h"
+#include "linenoise/linenoise.h"
 #include "natsort/strnatcmp.h"
 
 /* Our program needs to use regular malloc/free */
@@ -78,6 +79,54 @@ static bool do_show(int argc, char *argv[]);
 
 static void queue_init();
 
+/* linenoise */
+void completion(const char *buf, linenoiseCompletions *lc)
+{
+    if (buf[0] == 'e') {
+        linenoiseAddCompletion(lc, "easter egg");
+    }
+    if (buf[0] == 'f') {
+        linenoiseAddCompletion(lc, "free");
+    }
+    if (buf[0] == 'h') {
+        linenoiseAddCompletion(lc, "help");
+    }
+    if (buf[0] == 'i') {
+        linenoiseAddCompletion(lc, "ih");
+        linenoiseAddCompletion(lc, "it");
+    }
+    if (buf[0] == 'n') {
+        linenoiseAddCompletion(lc, "new");
+    }
+    if (buf[0] == 'r') {
+        if (buf[1] == 'h') {
+            linenoiseAddCompletion(lc, "rh");
+            linenoiseAddCompletion(lc, "rhq");
+        }
+        if (buf[1] == 'e') {
+            linenoiseAddCompletion(lc, "reverse");
+        }
+    }
+    if (buf[0] == 's') {
+        if (buf[1] == 'o') {
+            if (buf[2] == 'u') {
+                linenoiseAddCompletion(lc, "source");
+            } else {
+                linenoiseAddCompletion(lc, "sort");
+            }
+        }
+        if (buf[1] == 'i') {
+            linenoiseAddCompletion(lc, "size");
+        }
+        if (buf[1] == 'h') {
+            linenoiseAddCompletion(lc, "show");
+        }
+    }
+    if (buf[0] == 't') {
+        linenoiseAddCompletion(lc, "time");
+    }
+}
+
 static void console_init()
 {
     add_cmd("new", do_new, "                | Create new queue");
@@ -105,6 +154,17 @@ static void console_init()
               NULL);
     add_param("fail", &fail_limit,
               "Number of times allow queue operations to return false", NULL);
+}
+
+static void linenoise_init()
+{
+    /* Set the completion callback. This will be called every time the
+     * user uses the <tab> key. */
+    linenoiseSetCompletionCallback(completion);
+    /* Load history from file. The history file is just a plain text file
+     * where entries are separated by newlines. */
+    linenoiseHistoryLoad(
+        "linenoise/history.txt"); /* Load the history at startup */
 }
 
 static bool do_new(int argc, char *argv[])
@@ -757,6 +817,7 @@ int main(int argc, char *argv[])
     queue_init();
     init_cmd();
     console_init();
+    linenoise_init();
 
     set_verblevel(level);
     if (level > 1) {
