@@ -4,6 +4,7 @@ CFLAGS = -O1 -g -Wall -Werror -Idudect -I.
 GIT_HOOKS := .git/hooks/applied
 DUT_DIR := dudect
 NAT_DIR := natsort
+LINENOISE_DIR := linenoise
 all: $(GIT_HOOKS) qtest
 
 # Control the build verbosity
@@ -28,7 +29,8 @@ $(GIT_HOOKS):
 
 OBJS := qtest.o report.o console.o harness.o queue.o \
         random.o dudect/constant.o dudect/fixture.o dudect/ttest.o \
-        natsort/strnatcmp.o
+        natsort/strnatcmp.o \
+		linenoise/linenoise.o
 deps := $(OBJS:%.o=.%.o.d)
 
 qtest: $(OBJS)
@@ -38,6 +40,7 @@ qtest: $(OBJS)
 %.o: %.c
 	@mkdir -p .$(DUT_DIR)
 	@mkdir -p .$(NAT_DIR)
+	@mkdir -p .$(LINENOISE_DIR)
 	$(VECHO) "  CC\t$@\n"
 	$(Q)$(CC) -o $@ $(CFLAGS) -c -MMD -MF .$@.d $<
 
@@ -66,6 +69,7 @@ clean:
 	rm -f $(OBJS) $(deps) *~ qtest /tmp/qtest.*
 	rm -rf .$(DUT_DIR)
 	rm -rf .$(NAT_DIR)
+	rm -rf .$(LINENOISE_DIR)
 	rm -rf *.dSYM
 	(cd traces; rm -f *~)
 

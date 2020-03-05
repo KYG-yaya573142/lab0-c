@@ -2,6 +2,7 @@
 
 CPPCHECK_suppresses="--inline-suppr harness.c --suppress=unmatchedSuppression:harness.c --suppress=missingIncludeSystem"
 CPPCHECK_OPTS="-I. --enable=all --error-exitcode=1 --force $CPPCHECK_suppresses ."
+CPPCHECK_IGNORE="-ilinenoise/"
 
 RETURN=0
 CLANG_FORMAT=$(which clang-format)
@@ -82,7 +83,7 @@ do
 done
 
 # static analysis
-$CPPCHECK $CPPCHECK_OPTS >/dev/null
+$CPPCHECK $CPPCHECK_IGNORE $CPPCHECK_OPTS >/dev/null
 if [ $? -ne 0 ]; then
     RETURN=1
     echo "" >&2
