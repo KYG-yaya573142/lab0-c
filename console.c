@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "console.h"
+#include "linenoise/linenoise.h"
 #include "report.h"
 
 /* Some global values */

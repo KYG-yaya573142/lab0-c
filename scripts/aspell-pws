@@ -102,6 +102,7 @@ isprint
 ispunct
 isspace
 isupper
+linenoise
 longjmp
 memchr
 memcmp
