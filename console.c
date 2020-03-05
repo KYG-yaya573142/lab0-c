@@ -615,8 +615,7 @@ int cmd_select(int nfds,
         linebuf[len] = '\n';
         linebuf[len + 1] = '\0';
         free(cmdline); /* free the memory allocated by linenoise */
-        if (len)
-            cmdline = linebuf;
+        cmdline = len ? linebuf : NULL;
         if (cmdline)
             interpret_cmd(cmdline);
     }
