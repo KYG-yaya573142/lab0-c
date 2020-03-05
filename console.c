@@ -601,6 +601,9 @@ int cmd_select(int nfds,
         return result;
     } else { /* use linenoise (stdin) */
         cmdline = linenoise(prompt);
+        linenoiseHistoryAdd(cmdline); /* Add to the history. */
+        linenoiseHistorySave(
+            "linenoise/history.txt"); /* Save the history on disk. */
         int len = strlen(cmdline);
         if (len >= (RIO_BUFSIZE - 2)) /* prevent overflow */
             len = RIO_BUFSIZE - 2;
