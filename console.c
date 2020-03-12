@@ -1,6 +1,7 @@
 /* Implementation of simple command-line interface */
 
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -486,25 +487,27 @@ static char *readline()
         return NULL;
 
     for (cnt = 0; cnt < RIO_BUFSIZE - 2; cnt++) {
-        if (buf_stack->cnt <= 0) {
+        while (buf_stack->cnt <= 0) {
             /* Need to read from input file */
             buf_stack->cnt = read(buf_stack->fd, buf_stack->buf, RIO_BUFSIZE);
             buf_stack->bufptr = buf_stack->buf;
             if (buf_stack->cnt <= 0) {
-                /* Encountered EOF */
-                pop_file();
-                if (cnt > 0) {
-                    /* Last line of file did not terminate with newline. */
-                    /*  Terminate line & return it */
-                    *lptr++ = '\n';
-                    *lptr++ = '\0';
-                    if (echo) {
-                        report_noreturn(1, prompt);
-                        report_noreturn(1, linebuf);
+                if (errno != EINTR) { /* Interrupted by sig handler return */
+                    /* Encountered EOF */
+                    pop_file();
+                    if (cnt > 0) {
+                        /* Last line of file did not terminate with newline. */
+                        /*  Terminate line & return it */
+                        *lptr++ = '\n';
+                        *lptr++ = '\0';
+                        if (echo) {
+                            report_noreturn(1, prompt);
+                            report_noreturn(1, linebuf);
+                        }
+                        return linebuf;
                     }
-                    return linebuf;
+                    return NULL;
                 }
-                return NULL;
             }
         }
 
