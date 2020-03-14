@@ -239,33 +239,24 @@ static list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
     if (!l2)
         return l1;
 
-    list_ele_t *head = NULL; /* pseudo head */
-    list_ele_t *tmp = NULL;
-    /* decide the first element and use it as pseudo head */
-    if (strnatcmp(l1->value, l2->value) < 0) {
-        head = l1;
-        l1 = l1->next;
-    } else {
-        head = l2;
-        l2 = l2->next;
-    }
-    /* merge remaining elements to pseudo head */
-    tmp = head;
-    while (l1 && l2) {
+    list_ele_t *head = NULL;
+    list_ele_t **tmp = &head;
+    /* sort list elements based on strnatcmp */
+    while (l1 && l2) { /* DON'T strcmp a NULL ptr */
         if (strnatcmp(l1->value, l2->value) < 0) {
-            tmp->next = l1;
+            *tmp = l1;
             l1 = l1->next;
 
         } else {
-            tmp->next = l2;
+            *tmp = l2;
             l2 = l2->next;
         }
-        tmp = tmp->next;
+        tmp = &((*tmp)->next);
     }
     if (l1)
-        tmp->next = l1;
+        *tmp = l1;
     if (l2)
-        tmp->next = l2;
+        *tmp = l2;
     return head;
 }
 #endif
